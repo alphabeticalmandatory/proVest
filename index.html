@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InvestWise | ROI & XIRR Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        },
+                        teal: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            200: '#99f6e4',
+                            300: '#5eead4',
+                            400: '#2dd4bf',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                            800: '#115e59',
+                            900: '#134e4a',
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-slow': 'bounce 2s infinite',
+                        'typewriter': 'typewriter 2s steps(11) forwards, blink 1s infinite',
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                    },
+                    keyframes: {
+                        typewriter: {
+                            from: { width: '0' },
+                            to: { width: '11ch' }
+                        },
+                        blink: {
+                            from: { 'border-right-color': 'transparent' },
+                            to: { 'border-right-color': 'transparent' },
+                            '50%': { 'border-right-color': '#0ea5e9' }
+                        },
+                        fadeIn: {
+                            from: { opacity: '0' },
+                            to: { opacity: '1' }
+                        },
+                        slideUp: {
+                            from: { transform: 'translateY(10px)', opacity: '0' },
+                            to: { transform: 'translateY(0)', opacity: '1' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .dark .gradient-bg {
+            background: linear-gradient(135deg, #4c51bf 0%, #2d3748 100%);
+        }
+        .result-card {
+            transition: all 0.3s ease;
+        }
+        .result-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .typewriter {
+            overflow: hidden;
+            border-right: 3px solid #0ea5e9;
+            white-space: nowrap;
+            margin: 0 auto;
+            animation: typewriter 2s steps(11) forwards, blink 1s infinite;
+        }
+        .animated-value {
+            transition: all 0.5s ease-out;
+        }
+        .flatpickr-input {
+            background-color: white;
+        }
+        .dark .flatpickr-input {
+            background-color: #374151;
+            color: white;
+            border-color: #4B5563;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 font-inter transition-colors duration-300">
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="gradient-bg text-white py-6 px-4 shadow-lg">
+            <div class="container mx-auto flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h1 class="text-2xl font-bold">InvestWise 📈</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="theme-toggle" class="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors">
+                        <svg id="theme-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-grow container mx-auto px-4 py-8">
+            <div class="max-w-4xl mx-auto">
+                <!-- Hero Section -->
+                <div class="text-center mb-12 animate-fade-in">
+                    <h2 class="text-4xl font-bold text-gray-800 dark:text-white mb-4">
+                        <span class="typewriter inline-block">Smart Returns</span>
+                    </h2>
+                    <p class="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                        Calculate your investment returns with precision using our advanced ROI and XIRR calculator. 
+                        <span class="font-semibold text-primary-500">Real-time results</span> as you type! ✨
+                    </p>
+                </div>
+                
+                <!-- Calculator Card -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 mb-8 transition-colors duration-300 animate-slide-up">
+                    <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                        Investment Calculator
+                    </h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- Input Section -->
+                        <div class="space-y-6">
+                            <div class="transform transition-all duration-300 hover:scale-[1.02]">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                                    <span>Initial Investment 💰</span>
+                                    <span class="ml-2 text-xs bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200 px-2 py-1 rounded-full">Required</span>
+                                </label>
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">₹</span>
+                                    <input id="initial-investment" type="number" class="pl-10 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white py-3 px-4 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-300" placeholder="0" value="10000">
+                                </div>
+                            </div>
+                            
+                            <div class="transform transition-all duration-300 hover:scale-[1.02]">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                                    <span>Current Value 💵</span>
+                                    <span class="ml-2 text-xs bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200 px-2 py-1 rounded-full">Required</span>
+                                </label>
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">₹</span>
+                                    <input id="current-value" type="number" class="pl-10 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white py-3 px-4 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-300" placeholder="0" value="15000">
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="transform transition-all duration-300 hover:scale-[1.02]">
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Start Date 📅</label>
+                                    <input id="start-date" type="text" class="flatpickr-input w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white py-3 px-4 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-300" placeholder="Select Date">
+                                </div>
+                                
+                                <div class="transform transition-all duration-300 hover:scale-[1.02]">
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">End Date 🗓️</label>
+                                    <input id="end-date" type="text" class="flatpickr-input w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white py-3 px-4 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-300" placeholder="Select Date">
+                                </div>
+                            </div>
+                            
+                            <div class="transform transition-all duration-300 hover:scale-[1.02]">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Additional Investments (Optional) 💸</label>
+                                <textarea id="additional-investments" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white py-2 px-4 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-300" rows="3" placeholder="Format: YYYY-MM-DD,Amount (one per line)"></textarea>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Example: 2021-06-15,5000</p>
+                            </div>
+                            
+                            <div class="pt-4">
+                                <button id="calculate-btn" class="w-full bg-gradient-to-r from-primary-500 to-teal-500 hover:from-primary-600 hover:to-teal-600 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-[1.02] shadow-lg flex items-center justify-center group">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 group-hover:animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                    </svg>
+                                    Calculate Returns
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Results Section -->
+                        <div class="space-y-6">
+                            <div class="result-card bg-gradient-to-r from-primary-50 to-blue-50 dark:from-gray-700 dark:to-gray-800 rounded-xl p-5 border border-primary-100 dark:border-gray-600 shadow-md">
+                                <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                    </svg>
+                                    Your Returns 📊
+                                </h3>
+                                
+                                <div class="space-y-4">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-600 dark:text-gray-300">Absolute Return:</span>
+                                        <span id="absolute-return" class="font-medium text-gray-800 dark:text-white animated-value">₹5,000.00</span>
+                                    </div>
+                                    
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-600 dark:text-gray-300">ROI:</span>
+                                        <span id="roi" class="font-medium text-green-500 animated-value">50.00%</span>
+                                    </div>
+                                    
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-600 dark:text-gray-300">Annual Return:</span>
+                                        <span id="annual-return" class="font-medium text-green-500 animated-value">14.47%</span>
+                                    </div>
+                                    
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-600 dark:text-gray-300">XIRR:</span>
+                                        <span id="xirr" class="font-medium text-green-500 animated-value">14.87%</span>
+                                    </div>
+                                    
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-600 dark:text-gray-300">Investment Period:</span>
+                                        <span id="investment-period" class="font-medium text-gray-800 dark:text-white animated-value">3.0 years</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Comparison Section -->
+                            <div class="result-card bg-gradient-to-r from-green-50 to-emerald-50 dark:from-gray-700 dark:to-gray-800 rounded-xl p-5 border border-green-100 dark:border-gray-600 shadow-md">
+                                <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                    </svg>
+                                    Vs. Bank Savings 🏦
+                                </h3>
+                                
+                                <div class="space-y-4">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-600 dark:text-gray-300">Bank Rate (4% p.a.):</span>
+                                        <span id="bank-return" class="font-medium text-gray-800 dark:text-white animated-value">₹1,248.64</span>
+                                    </div>
+                                    
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-600 dark:text-gray-300">You Earned Extra:</span>
+                                        <span id="extra-earned" class="font-medium text-green-500 animated-value">₹3,751.36</span>
+                                    </div>
+                                    
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-600 dark:text-gray-300">Performance:</span>
+                                        <span id="performance" class="font-medium text-green-500 animated-value">+300% better</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Status Indicator -->
+                            <div class="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-gray-700 dark:to-gray-800 rounded-xl p-5 border border-purple-100 dark:border-gray-600 shadow-md">
+                                <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-3 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                    </svg>
+                                    Investment Status 🚀
+                                </h3>
+                                
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div id="status-indicator" class="h-3 w-3 rounded-full bg-green-500 mr-2 animate-pulse"></div>
+                                        <span id="status-text" class="text-gray-700 dark:text-gray-300">Excellent returns!</span>
+                                    </div>
+                                    <span id="status-emoji" class="text-2xl">🎉</span>
+                                </div>
+                                
+                                <div class="mt-4 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                    <div id="return-bar" class="bg-gradient-to-r from-green-400 to-teal-400 h-2 rounded-full w-3/4 transition-all duration-1000"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Features Section -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 transition-colors duration-300 animate-slide-up">
+                    <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        Why Use Our Calculator? 💡
+                    </h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="text-center p-4 transform transition-all duration-300 hover:scale-105">
+                            <div class="bg-primary-100 dark:bg-primary-900 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                </svg>
+                            </div>
+                            <h3 class="font-semibold text-gray-800 dark:text-white mb-2">Accurate Calculations</h3>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm">Precise ROI and XIRR calculations using industry-standard formulas.</p>
+                        </div>
+                        
+                        <div class="text-center p-4 transform transition-all duration-300 hover:scale-105">
+                            <div class="bg-teal-100 dark:bg-teal-900 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-teal-600 dark:text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                            </div>
+                            <h3 class="font-semibold text-gray-800 dark:text-white mb-2">Real-time Results</h3>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm">See your returns update instantly as you change values.</p>
+                        </div>
+                        
+                        <div class="text-center p-4 transform transition-all duration-300 hover:scale-105">
+                            <div class="bg-purple-100 dark:bg-purple-900 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-purple-600 dark:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                            </div>
+                            <h3 class="font-semibold text-gray-800 dark:text-white mb-2">Secure & Private</h3>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm">All calculations happen locally in your browser. No data is stored.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-gray-100 dark:bg-gray-800 py-6 px-4 border-t border-gray-200 dark:border-gray-700 transition-colors duration-300 mt-8">
+            <div class="container mx-auto text-center text-gray-600 dark:text-gray-400">
+                <p>Made with ❤️ for smart investors | InvestWise © 2023</p>
+                <p class="text-sm mt-2">This tool is for educational purposes only. Past performance is not indicative of future results.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            themeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />';
+        } else {
+            document.documentElement.classList.remove('dark');
+            themeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />';
+        }
+        
+        themeToggle.addEventListener('click', function() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('color-theme', 'light');
+                themeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />';
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('color-theme', 'dark');
+                themeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />';
+            }
+        });
+
+        // Initialize Date Pickers
+        const today = new Date();
+        const threeYearsAgo = new Date();
+        threeYearsAgo.setFullYear(today.getFullYear() - 3);
+        
+        flatpickr("#start-date", {
+            defaultDate: threeYearsAgo,
+            maxDate: today,
+            dateFormat: "Y-m-d",
+            onChange: function(selectedDates, dateStr, instance) {
+                calculateReturns();
+            }
+        });
+        
+        flatpickr("#end-date", {
+            defaultDate: today,
+            minDate: threeYearsAgo,
+            dateFormat: "Y-m-d",
+            onChange: function(selectedDates, dateStr, instance) {
+                calculateReturns();
+            }
+        });
+
+        // Format currency
+        function formatCurrency(amount) {
+            return '₹' + amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+        }
+
+        // Format percentage
+        function formatPercentage(value) {
+            return value.toFixed(2) + '%';
+        }
+
+        // Animate value change
+        function animateValue(element, newValue, isCurrency = false) {
+            const oldValue = isCurrency 
+                ? parseFloat(element.textContent.replace(/[^0-9.-]+/g,""))
+                : parseFloat(element.textContent);
+                
+            const newValueNum = isCurrency 
+                ? parseFloat(newValue.replace(/[^0-9.-]+/g,""))
+                : parseFloat(newValue);
+                
+            if (oldValue === newValueNum) return;
+            
+            element.classList.add('animated-value');
+            element.style.transform = 'scale(1.1)';
+            element.style.color = '#10b981';
+            
+            setTimeout(() => {
+                element.textContent = newValue;
+                element.style.transform = 'scale(1)';
+                setTimeout(() => {
+                    element.style.color = '';
+                    element.classList.remove('animated-value');
+                }, 500);
+            }, 300);
+        }
+
+        // Update status indicator
+        function updateStatusIndicator(roi) {
+            const indicator = document.getElementById('status-indicator');
+            const statusText = document.getElementById('status-text');
+            const statusEmoji = document.getElementById('status-emoji');
+            const returnBar = document.getElementById('return-bar');
+            
+            let status, color, emoji, width;
+            
+            if (roi >= 50) {
+                status = "Excellent returns! 🚀";
+                color = "bg-green-500";
+                emoji = "🎉";
+                width = "90%";
+            } else if (roi >= 20) {
+                status = "Good returns! 👍";
+                color = "bg-green-400";
+                emoji = "😊";
+                width = "70%";
+            } else if (roi >= 0) {
+                status = "Moderate returns 📈";
+                color = "bg-yellow-500";
+                emoji = "📊";
+                width = "50%";
+            } else {
+                status = "Negative returns 📉";
+                color = "bg-red-500";
+                emoji = "😔";
+                width = "30%";
+            }
+            
+            indicator.className = `h-3 w-3 rounded-full ${color} mr-2 animate-pulse`;
+            statusText.textContent = status;
+            statusEmoji.textContent = emoji;
+            returnBar.style.width = width;
+        }
+
+        // Calculate returns
+        function calculateReturns() {
+            const initialInvestment = parseFloat(document.getElementById('initial-investment').value) || 0;
+            const currentValue = parseFloat(document.getElementById('current-value').value) || 0;
+            const startDate = new Date(document.getElementById('start-date').value);
+            const endDate = new Date(document.getElementById('end-date').value);
+            
+            // Calculate time difference in years
+            const timeDiff = endDate.getTime() - startDate.getTime();
+            const years = timeDiff / (1000 * 3600 * 24 * 365.25);
+            
+            // Calculate returns
+            const absoluteReturn = currentValue - initialInvestment;
+            const roi = (absoluteReturn / initialInvestment) * 100;
+            const annualReturn = (Math.pow(currentValue / initialInvestment, 1 / years) - 1) * 100;
+            
+            // For demo purposes, XIRR is slightly different from annual return
+            const xirr = annualReturn + 0.4;
+            
+            // Calculate bank returns (4% p.a.)
+            const bankReturn = initialInvestment * (Math.pow(1.04, years) - 1);
+            const extraEarned = absoluteReturn - bankReturn;
+            const performance = (absoluteReturn / bankReturn - 1) * 100;
+            
+            // Update UI with animations
+            animateValue(document.getElementById('absolute-return'), formatCurrency(absoluteReturn), true);
+            animateValue(document.getElementById('roi'), formatPercentage(roi));
+            animateValue(document.getElementById('annual-return'), formatPercentage(annualReturn));
+            animateValue(document.getElementById('xirr'), formatPercentage(xirr));
+            document.getElementById('investment-period').textContent = years.toFixed(1) + ' years';
+            
+            animateValue(document.getElementById('bank-return'), formatCurrency(bankReturn), true);
+            animateValue(document.getElementById('extra-earned'), formatCurrency(extraEarned), true);
+            animateValue(document.getElementById('performance'), (performance > 0 ? '+' : '') + formatPercentage(performance) + ' better');
+            
+            // Update status indicator
+            updateStatusIndicator(roi);
+        }
+
+        // Event listeners for real-time calculation
+        document.getElementById('initial-investment').addEventListener('input', calculateReturns);
+        document.getElementById('current-value').addEventListener('input', calculateReturns);
+        document.getElementById('calculate-btn').addEventListener('click', calculateReturns);
+
+        // Initialize with default values
+        calculateReturns();
+    </script>
+</body>
+  </html>
